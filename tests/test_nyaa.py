@@ -50,6 +50,45 @@ class NyaaTestCase(unittest.TestCase):
         assert b'Username' in rv.data
         assert b'Password' in rv.data
 
+    def test_login_with_non_ascii_username(self):
+        # Posting a username with non-ASCII characters should not raise an exception
+        rv = self.app.post('/login', data={
+            'username': 'ünîcødê',
+            'password': 'whatever'
+        }, follow_redirects=True)
+        assert b'Invalid characters in username.' in rv.data
+
+    def test_email_blacklist_validator(self):
+        # Registry should reject emails matching string or regex entries
+        with self.nyaa_app.app_context():
+            self.nyaa_app.config['EMAIL_BLACKLIST'] = ['foo', re.compile(r'bar')]
+
+        # use form directly to avoid full request complexity
+        form = nyaa.forms.RegisterForm(data={
+            'username': 'user1',
+            'email': 'foo@example.com',
+            'password': 'pass123',
+            'password_confirm': 'pass123'
+        })
+        assert not form.validate()
+        assert any('Blacklisted email provider' in e for e in form.email.errors)
+
+        form = nyaa.forms.RegisterForm(data={
+            'username': 'user2',
+            'email': 'bar@domain.com',
+            'password': 'pass123',
+            'password_confirm': 'pass123'
+        })
+        assert not form.validate()
+
+        form = nyaa.forms.RegisterForm(data={
+            'username': 'user3',
+            'email': 'good@domain.com',
+            'password': 'pass123',
+            'password_confirm': 'pass123'
+        })
+        assert form.validate()
+
 
 if __name__ == '__main__':
     unittest.main()

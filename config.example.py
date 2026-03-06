@@ -1,7 +1,7 @@
 import os
 import re
 
-DEBUG = True
+DEBUG = False
 
 ######################
 ## Maintenance mode ##
@@ -29,9 +29,9 @@ RAID_MODE_REGISTER_MESSAGE = 'Registration is currently being limited.'
 #############
 
 # What the site identifies itself as. This affects templates, not database stuff.
-SITE_NAME = 'Nyaa'
+SITE_NAME = 'AnimeBD'
 # What the both sites are labeled under (used for eg. email subjects)
-GLOBAL_SITE_NAME = 'Nyaa.si'
+GLOBAL_SITE_NAME = 'www.animebd.xyz'
 
 # General prefix for running multiple sites, eg. most database tables are site-prefixed
 SITE_FLAVOR = 'nyaa' # 'nyaa' or 'sukebei'
@@ -45,7 +45,7 @@ SECRET_KEY = '***'
 # Present a recaptcha for anonymous uploaders
 USE_RECAPTCHA = False
 # Require email validation
-USE_EMAIL_VERIFICATION = False
+USE_EMAIL_VERIFICATION = True
 # Use MySQL or Sqlite3 (mostly deprecated)
 USE_MYSQL = True
 # Show seeds/peers/completions in torrent list/page
@@ -92,7 +92,7 @@ else:
 ###########
 
 # 'smtp' or 'mailgun'
-MAIL_BACKEND = 'mailgun'
+MAIL_BACKEND = 'smtp'
 MAIL_FROM_ADDRESS = 'Sender Name <sender@domain.com>'
 
 # Mailgun settings
@@ -100,10 +100,10 @@ MAILGUN_API_BASE = 'https://api.mailgun.net/v3/YOUR_DOMAIN_NAME'
 MAILGUN_API_KEY = 'YOUR_API_KEY'
 
 # SMTP settings
-SMTP_SERVER = '***'
+SMTP_SERVER = 'smtp.gmail.com'
 SMTP_PORT = 587
-SMTP_USERNAME = '***'
-SMTP_PASSWORD = '***'
+SMTP_USERNAME = ''
+SMTP_PASSWORD = ''
 
 
 # The maximum number of files a torrent can contain
@@ -112,10 +112,10 @@ MAX_FILES_VIEW = 1000
 
 # Verify uploaded torrents have the given tracker in them?
 ENFORCE_MAIN_ANNOUNCE_URL = False
-MAIN_ANNOUNCE_URL = 'http://127.0.0.1:6881/announce'
+MAIN_ANNOUNCE_URL = 'http://main.animebd.xyz:6881/announce'
 
 # Tracker API integration - don't mind this
-TRACKER_API_URL = 'http://127.0.0.1:6881/api'
+TRACKER_API_URL = 'http://main.animebd.xyz:6881/api'
 TRACKER_API_AUTH = 'topsecret'
 
 #############

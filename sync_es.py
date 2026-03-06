@@ -114,6 +114,7 @@ def reindex_torrent(t, index_name):
     return {
         '_op_type': 'update',
         '_index': index_name,
+        '_type': '_doc',
         '_id': str(t['id']),
         "doc": doc,
         "doc_as_upsert": True
@@ -127,6 +128,7 @@ def reindex_stats(s, index_name):
     return {
         '_op_type': 'update',
         '_index': index_name,
+        '_type': '_doc',
         '_id': str(s['torrent_id']),
         "doc": {
             "stats_last_updated": s["last_updated"],
@@ -139,6 +141,7 @@ def delet_this(row, index_name):
     return {
         "_op_type": 'delete',
         '_index': index_name,
+        '_type': '_doc',
         '_id': str(row['values']['id'])}
 
 # we could try to make this script robust to errors from es or mysql, but since
@@ -166,8 +169,42 @@ class BinlogReader(ExitingThread):
         self.write_buf = write_buf
 
     def run_happy(self):
-        with open(SAVE_LOC) as f:
-            pos = json.load(f)
+        # Try to load saved position, or initialize from MySQL SHOW MASTER STATUS
+        try:
+            with open(SAVE_LOC, 'r') as f:
+                content = f.read().strip()
+                if content:
+                    pos = json.loads(content)
+                else:
+                    # File is empty, get position from MySQL
+                    log.info(f"Position file {SAVE_LOC} is empty, initializing from MySQL")
+                    with app.app_context():
+                        result = db.engine.execute('SHOW MASTER STATUS;').fetchone()
+                        pos = {
+                            'log_file': result[0],
+                            'log_pos': result[1]
+                        }
+                    log.info(f"Initialized position from MySQL: {pos}")
+        except FileNotFoundError:
+            # File doesn't exist, create it from MySQL
+            log.info(f"Position file {SAVE_LOC} not found, initializing from MySQL")
+            with app.app_context():
+                result = db.engine.execute('SHOW MASTER STATUS;').fetchone()
+                pos = {
+                    'log_file': result[0],
+                    'log_pos': result[1]
+                }
+            log.info(f"Initialized position from MySQL: {pos}")
+        except (json.JSONDecodeError, ValueError) as e:
+            # File has invalid JSON, get position from MySQL
+            log.warning(f"Position file {SAVE_LOC} has invalid JSON: {e}, reinitializing from MySQL")
+            with app.app_context():
+                result = db.engine.execute('SHOW MASTER STATUS;').fetchone()
+                pos = {
+                    'log_file': result[0],
+                    'log_pos': result[1]
+                }
+            log.info(f"Reinitialized position from MySQL: {pos}")
 
         stream = BinLogStreamReader(
                 # TODO parse out from config.py or something
