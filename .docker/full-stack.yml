@@ -39,16 +39,18 @@ services:
     restart: on-failure
 
   mariadb:
-    image: mariadb:10.0
+    image: mariadb:10.11
     volumes:
       - './mariadb-init-sql:/docker-entrypoint-initdb.d:ro'
       - '../configs/my.cnf:/etc/mysql/conf.d/50-binlog.cnf:ro'
       - 'mariadb-data:/var/lib/mysql'
     environment:
-      - MYSQL_RANDOM_ROOT_PASSWORD=yes
+      - MYSQL_ROOT_PASSWORD=123456789987jaGAJ
       - MYSQL_USER=nyaadev
       - MYSQL_PASSWORD=ZmtB2oihHFvc39JaEDoF
       - MYSQL_DATABASE=nyaav2
+    ports:
+      - "3306:3306" # Exposes MariaDB to your local Adminer
 
   elasticsearch:
     image: elasticsearch:6.5.4
